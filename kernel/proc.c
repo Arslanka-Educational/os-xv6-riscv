@@ -90,16 +90,18 @@ myproc(void)
 }
 
 // Return the struct proc * by pid, or zero if none.
-struct proc*
+static struct proc*
 proc_by_pid(int pid)
 { 
-  struct proc *p;
+  struct proc *caller_proc = myproc();
+  struct proc * p;
 
-  for(p = proc; p < &proc[NPROC]; p++) {
-      if (proc->pid == pid) {
+  for(p = proc; p < &caller_proc[NPROC]; p++) {
+      if (p->pid == pid && !proc->killed) {
         return p;
       }
   };
+
   return 0;
 }
 
@@ -666,7 +668,7 @@ either_copyin(void *dst, int user_src, uint64 src, uint64 len)
   }
 }
 
-uint32 proc_s_register_by_index(const struct proc *proc, int index) {
+static uint32 proc_s_register_by_index(const struct proc *proc, int index) {
   const struct trapframe *trapframe = proc->trapframe;
 
   const uint64 mask = 0x00000000FFFFFFFF;
