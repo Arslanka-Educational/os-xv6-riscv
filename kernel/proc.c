@@ -663,6 +663,8 @@ dump() {
 
     const uint64 mask = 0x00000000FFFFFFFF;
     const uint32 registers[] = {
+      trapframe->s0 & mask,
+      trapframe->s1 & mask,
       trapframe->s2 & mask,
       trapframe->s3 & mask,
       trapframe->s4 & mask,
@@ -675,7 +677,7 @@ dump() {
       trapframe->s11 & mask,
     };
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 2; i <= 11; ++i) {
       printf("s%d\t=\t%d\n", i, registers[i]);
     }
 
