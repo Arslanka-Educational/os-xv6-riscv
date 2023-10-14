@@ -144,6 +144,7 @@ UPROGS=\
 	$U/_zombie\
 	$U/_pingpong\
 	$U/_dumptests\
+	$U/_dump2tests\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
