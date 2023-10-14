@@ -5,7 +5,6 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
-#include <stddef.h>
 
 struct cpu cpus[NCPU];
 
@@ -676,7 +675,7 @@ dump() {
       trapframe->s11 & mask,
     };
 
-    for (size_t i = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i) {
       printf("s%d\t=\t%d\n", i, registers[i]);
     }
 
