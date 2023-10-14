@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include <stddef.h>
 
 struct cpu cpus[NCPU];
 
@@ -650,6 +651,36 @@ either_copyin(void *dst, int user_src, uint64 src, uint64 len)
     memmove(dst, (char*)src, len);
     return 0;
   }
+}
+
+int
+dump() {
+    const struct proc *proc = myproc();
+    if (proc == 0) {
+      return -1;
+    }
+
+    const struct trapframe *trapframe = proc->trapframe;
+
+    const uint64 mask = 0x00000000FFFFFFFF;
+    const uint32 registers[] = {
+      trapframe->s2 & mask,
+      trapframe->s3 & mask,
+      trapframe->s4 & mask,
+      trapframe->s5 & mask,
+      trapframe->s6 & mask,
+      trapframe->s7 & mask,
+      trapframe->s8 & mask,
+      trapframe->s9 & mask,
+      trapframe->s10 & mask,
+      trapframe->s11 & mask,
+    };
+
+    for (size_t i = 0; i < 10; ++i) {
+      printf("s%d\t=\t%d\n", i, registers[i]);
+    }
+
+    return 0;
 }
 
 // Print a process listing to console.  For debugging.
