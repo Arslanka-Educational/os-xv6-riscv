@@ -8,6 +8,20 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct list;
+
+//list.c
+void            lst_init(struct list *lst);
+int             lst_empty(struct list *lst);
+void            lst_remove(struct list *e);
+void*           lst_pop(struct list *lst);
+void            lst_push(struct list *lst, void *p);
+void            lst_print(struct list *lst);
+
+//buddy.c
+void bd_init(void *base, void *end);
+void bd_free(void *p);
+void *bd_malloc(uint64 nbytes);
 
 // bio.c
 void            binit(void);
