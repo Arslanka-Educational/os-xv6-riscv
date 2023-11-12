@@ -93,7 +93,7 @@ void bd_print() { // doesn't work properly
   for (int k = 0; k < nsizes; k++) {
     printf("size %d (blksz %d nblk %d): free list: ", k, BLK_SIZE(k), NBLK(k));
     lst_print(&bd_sizes[k].free);
-    printf("  alloc:");
+    printf("  xor_alloc_buddy:");
     bd_print_vector(bd_sizes[k].xor_alloc_buddy, NBLK(k));
     if (k > 0) {
       printf("  split:");

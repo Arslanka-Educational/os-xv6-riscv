@@ -121,6 +121,7 @@ int             either_copyout(int user_dst, uint64 dst, void *src, uint64 len);
 int             either_copyin(void *dst, int user_src, uint64 src, uint64 len);
 int             dump(void);
 int             dump2(int pid, int register_num, uint64 return_address);
+int             dump_alloc(int pid, void *addr, void *buffer, int size);
 void            procdump(void);
 
 // swtch.S

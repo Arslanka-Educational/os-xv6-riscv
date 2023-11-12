@@ -14,15 +14,9 @@
 #include "proc.h"
 
 struct devsw devsw[NDEV];
-struct {
-  struct spinlock lock;
-} ftable;
 
 void
-fileinit(void)
-{
-  initlock(&ftable.lock, "ftable");
-}
+fileinit(void){}
 
 // Allocate a file structure.
 struct file*
@@ -33,21 +27,29 @@ filealloc(void)
   if (!f) {
     return 0;
   } else {
+    f->type = FD_NONE;
     f->ref = 1;
+    f->readable = 0;
+    f->writable = 0;
+    f->pipe = 0;
+    f->ip = 0;
+    f->off = 0;
+    f->major = 0;
+
+    initlock(&f->lock, "file-lock");
     return f;
   }
 }
-
 
 // Increment ref count for file f.
 struct file*
 filedup(struct file *f)
 {
-  acquire(&ftable.lock);
+  acquire(&f->lock);
   if(f->ref < 1)
     panic("filedup");
   f->ref++;
-  release(&ftable.lock);
+  release(&f->lock);
   return f;
 }
 
@@ -55,13 +57,15 @@ filedup(struct file *f)
 void
 fileclose(struct file *f)
 {
-  acquire(&ftable.lock);
+  acquire(&f->lock);
   if(f->ref < 1)
     panic("fileclose");
   if(--f->ref > 0){
-    release(&ftable.lock);
+    release(&f->lock);
     return;
   }
+
+  release(&f->lock);
 
   if(f->type == FD_PIPE){
     pipeclose(f->pipe, f->writable);
@@ -74,7 +78,6 @@ fileclose(struct file *f)
   f->ref = 0;
   f->type = FD_NONE;
   bd_free(f);
-  release(&ftable.lock);
 }
 
 // Get metadata about file f.

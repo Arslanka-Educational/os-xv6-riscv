@@ -738,6 +738,73 @@ dump2(int pid, int register_num, uint64 return_address)
   return 0;
 }
 
+int dump_alloc(int pid, void *addr, void *buffer, int size){
+  const struct proc *p = proc_by_pid(pid);
+
+  if (!p) return -1;
+
+	uint64 i = 0, pa, n, off, a;
+	pte_t *pte;
+	char *b;
+
+  acquire(&proc->lock);
+
+  b = (char *)buffer;
+  if (b == 0) {
+    printf("char* buffer is null");
+    release(&proc->lock);
+    return -1;
+  }
+  printf("fill buffer with zeroes\n");
+  memset(b, 0, size);
+  
+  if((uint64)addr >= p->sz){
+      printf("dump: reach proc->sz %d of pid %d\n", p->sz, pid);
+      release(&proc->lock);
+      return -1;
+  }
+
+	if((uint64)addr+size > p->sz){
+      size = p->sz - (uint64)addr;
+      printf("dump: size = %d\n", size);
+	}
+
+	a = PGROUNDDOWN((uint64)addr);
+	off = (uint64)addr - a;
+
+	for(i = 0; i-off < size; i += PGSIZE){ 
+	  if((pte = walk(p->pagetable, a+i, 0)) == 0){
+        printf("dump: see the first unmapped page of pid %d\n", pid);
+	    	break;
+	  }
+
+	    pa = (uint64)PTE_ADDR(*pte);
+
+      if(i == 0){
+          if(size < PGSIZE - off) {
+            n = size;
+          } else {
+            n = PGSIZE - off;
+          }
+        memmove(b, P2V(pa)+off, n);
+        printf("memmove(%d, %d, %d)\n", b, P2V(pa)+off, n);
+      }
+      else{
+        if(size - (i-off) < PGSIZE) {
+          n = size - (i-off);
+        } else {
+          n = PGSIZE;    
+        }
+        memmove(b+i-off, P2V(pa), n);
+        printf("memmove(%d, %d, %d)\n", b+i-off, P2V(pa), n);
+      }
+  }
+
+  release(&proc->lock);
+
+  return i - off >= size ? size : i - off;
+}
+
 // Print a process listing to console.  For debugging.
 // Runs when user types ^P on console.
 // No lock to avoid wedging a stuck machine further.

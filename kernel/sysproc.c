@@ -101,10 +101,31 @@ sys_dump2(void)
 {
   int pid;
   int register_num;
-  uint64 return_value = 0;
+  uint64 return_value;
 
   argint(0, &pid);
   argint(1, &register_num);
   argaddr(2, &return_value);
   return dump2(pid, register_num, return_value);
+}
+
+uint64
+sys_dump_alloc(void)
+{
+  int pid;
+  uint64 addr;
+  uint64 buffer;
+  int size;
+  argint(0, &pid);
+  argaddr(1, &addr);
+  argaddr(2, &buffer);
+  argint(3, &size);
+  return dump_alloc(pid, &addr, &buffer, size);
+}
+
+uint64
+sys_procdump(void)
+{
+  procdump();
+  return 0;
 }

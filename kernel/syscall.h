@@ -22,3 +22,5 @@
 #define SYS_close  21
 #define SYS_dump   22
 #define SYS_dump2  23
+#define SYS_dump_alloc 24
+#define SYS_procdump 25
