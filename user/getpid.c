@@ -3,6 +3,7 @@
 int
 main(int argc, char *argv[])
 {
-  procdump();
+  printf("current pid=%d\n", getpid());
   exit(0);
 }
+ 

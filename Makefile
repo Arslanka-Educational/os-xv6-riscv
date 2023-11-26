@@ -150,8 +150,9 @@ UPROGS=\
 	$U/_alloctest\
 	$U/_dumppid_test\
 	$U/_dumppid\
-	$U/_getpid\
 	$U/_procdump\
+	$U/_dump_pagetable\
+	$U/_dumppagetabletest\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

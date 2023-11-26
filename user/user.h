@@ -28,6 +28,7 @@ int dump(void);
 int dump2(int pid, int register_num, uint64 *return_value);
 int dump_alloc(const int pid, const void *addr, const void *buffer, int size);
 void procdump(void);
+int dumppagetable(const int pid);
 
 // ulib.c
 int stat(const char*, struct stat*);

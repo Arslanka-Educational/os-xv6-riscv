@@ -780,7 +780,7 @@ int dump_alloc(int pid, void *addr, void *buffer, int size){
 
 	    pa = (uint64)PTE_ADDR(*pte);
 
-      if(i == 0){
+      if(i == 0) {
           if(size < PGSIZE - off) {
             n = size;
           } else {
@@ -789,7 +789,7 @@ int dump_alloc(int pid, void *addr, void *buffer, int size){
         memmove(b, P2V(pa)+off, n);
         printf("memmove(%d, %d, %d)\n", b, P2V(pa)+off, n);
       }
-      else{
+      else {
         if(size - (i-off) < PGSIZE) {
           n = size - (i-off);
         } else {
@@ -803,6 +803,25 @@ int dump_alloc(int pid, void *addr, void *buffer, int size){
   release(&proc->lock);
 
   return i - off >= size ? size : i - off;
+}
+
+int dumppagetable(int pid)
+{
+    const struct proc *p = proc_by_pid(pid);
+
+    if (!p) return -1;
+    
+    pagetable_t pde = p->pagetable;
+
+    acquire(&proc->lock);
+    if (*pde & PTE_V) 
+    {
+      printf("START PAGE TABLE (pid %d)\n", pid);
+      printwalk(pde, 1);
+      printf("END PAGE TABLE\n");
+    }
+    release(&proc->lock);
+    return 0;
 }
 
 // Print a process listing to console.  For debugging.
