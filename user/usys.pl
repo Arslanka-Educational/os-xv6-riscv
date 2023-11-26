@@ -40,3 +40,4 @@ entry("dump");
 entry("dump2");
 entry("dump_alloc");
 entry("procdump");
+entry("dumppagetable")

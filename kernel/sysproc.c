@@ -129,3 +129,11 @@ sys_procdump(void)
   procdump();
   return 0;
 }
+
+uint64
+sys_dumppagetable(void)
+{
+  int pid;
+  argint(0, &pid);
+  return dumppagetable(pid);
+}

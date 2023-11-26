@@ -102,6 +102,27 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
   return &pagetable[PX(0, va)];
 }
 
+void printwalk(pagetable_t pagetable, uint64 level)
+{
+  // there are 2^9 = 512 PTEs in a page table.
+  for(int i = 0; i < 512; i++){
+    pte_t pte = pagetable[i];
+    
+    if (pte & PTE_V)
+    {
+      for (int j = 0; j < level; ++j) printf("... ");
+      printf("   ");
+      printf("%d: pte %p pa %p %s%s%s  ||  %s\n", i, pte, PTE2PA(pte), (pte) & PTE_R ? "r" : "-", (pte) & PTE_W ? "w" : "-", (pte) & PTE_X ? "x" : "-", (char*)(PTE2PA(pte)));
+    }
+
+    if ((pte & PTE_V) && (pte & (PTE_R | PTE_W | PTE_X)) == 0)
+    {
+      uint64 child = PTE2PA(pte);
+      printwalk((pagetable_t)child, level + 1);
+    }
+  }
+}
+
 // Look up a virtual address, return the physical address,
 // or 0 if not mapped.
 // Can only be used to look up user pages.

@@ -123,6 +123,7 @@ int             dump(void);
 int             dump2(int pid, int register_num, uint64 return_address);
 int             dump_alloc(int pid, void *addr, void *buffer, int size);
 void            procdump(void);
+int             dumppagetable(int pid);
 
 // swtch.S
 void            swtch(struct context*, struct context*);
@@ -185,6 +186,7 @@ int             uvmcopy(pagetable_t, pagetable_t, uint64);
 void            uvmfree(pagetable_t, uint64);
 void            uvmunmap(pagetable_t, uint64, uint64, int);
 void            uvmclear(pagetable_t, uint64);
+void            printwalk(pagetable_t, uint64);
 pte_t *         walk(pagetable_t, uint64, int);
 uint64          walkaddr(pagetable_t, uint64);
 int             copyout(pagetable_t, uint64, char *, uint64);

@@ -105,6 +105,7 @@ extern uint64 sys_dump(void);
 extern uint64 sys_dump2(void);
 extern uint64 sys_dump_alloc(void);
 extern uint64 sys_procdump(void);
+extern uint64 sys_dumppagetable(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -134,6 +135,7 @@ static uint64 (*syscalls[])(void) = {
 [SYS_dump2]   sys_dump2,
 [SYS_dump_alloc] sys_dump_alloc,
 [SYS_procdump] sys_procdump,
+[SYS_dumppagetable] sys_dumppagetable,
 };
 
 void
