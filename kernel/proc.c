@@ -89,6 +89,22 @@ myproc(void)
   return p;
 }
 
+// Return the struct proc * by pid, or zero if none.
+static struct proc*
+proc_by_pid(int pid)
+{ 
+  struct proc *caller_proc = myproc();
+  struct proc * p;
+
+  for(p = proc; p < &caller_proc[NPROC]; p++) {
+      if (p->pid == pid && !proc->killed) {
+        return p;
+      }
+  };
+
+  return 0;
+}
+
 int
 allocpid()
 {
@@ -650,6 +666,143 @@ either_copyin(void *dst, int user_src, uint64 src, uint64 len)
     memmove(dst, (char*)src, len);
     return 0;
   }
+}
+
+static uint32 proc_s_register_by_index(const struct proc *proc, int index) {
+  const struct trapframe *trapframe = proc->trapframe;
+
+  const uint64 mask = 0x00000000FFFFFFFF;
+  const uint32 registers[] = {
+      trapframe->s0 & mask,
+      trapframe->s1 & mask,
+      trapframe->s2 & mask,
+      trapframe->s3 & mask,
+      trapframe->s4 & mask,
+      trapframe->s5 & mask,
+      trapframe->s6 & mask,
+      trapframe->s7 & mask,
+      trapframe->s8 & mask,
+      trapframe->s9 & mask,
+      trapframe->s10 & mask,
+      trapframe->s11 & mask,
+    };
+
+    return registers[index];
+}
+int
+dump() {
+    const struct proc *proc = myproc();
+    if (proc == 0) {
+      return -1;
+    }
+
+    for (int i = 2; i <= 11; ++i) {
+      printf("s%d\t=\t%d\n", i, proc_s_register_by_index(proc, i));
+    }
+
+    return 0;
+}
+
+int
+dump2(int pid, int register_num, uint64 return_address)
+{
+  if (register_num < 0 || register_num > 11) {
+      return -3; // register not found
+  }
+
+  if (return_address == 0) {
+      return -4;
+  }
+
+  const struct proc *cur_proc = myproc();
+  if (cur_proc == 0) {
+      return -2;
+  }
+
+  const struct proc *target_proc = proc_by_pid(pid);
+  if (target_proc == 0) {
+      return -2; // proc with pid doesn't exist;
+  }
+
+  if (target_proc->parent != cur_proc && target_proc != cur_proc) {
+      return -1; // proc doesn't have enough rights;
+  }
+
+  const uint32 register_value = proc_s_register_by_index(target_proc, register_num);
+
+ if(copyout(cur_proc->pagetable, return_address, 
+            (char *)&register_value, sizeof(register_value)) < 0) {
+    return -4;
+  }
+  
+  return 0;
+}
+
+int dump_alloc(int pid, void *addr, void *buffer, int size){
+  const struct proc *p = proc_by_pid(pid);
+
+  if (!p) return -1;
+
+	uint64 i = 0, pa, n, off, a;
+	pte_t *pte;
+	char *b;
+
+  acquire(&proc->lock);
+
+  b = (char *)buffer;
+  if (b == 0) {
+    printf("char* buffer is null");
+    release(&proc->lock);
+    return -1;
+  }
+  printf("fill buffer with zeroes\n");
+  memset(b, 0, size);
+  
+  if((uint64)addr >= p->sz){
+      printf("dump: reach proc->sz %d of pid %d\n", p->sz, pid);
+      release(&proc->lock);
+      return -1;
+  }
+
+	if((uint64)addr+size > p->sz){
+      size = p->sz - (uint64)addr;
+      printf("dump: size = %d\n", size);
+	}
+
+	a = PGROUNDDOWN((uint64)addr);
+	off = (uint64)addr - a;
+
+	for(i = 0; i-off < size; i += PGSIZE){ 
+	  if((pte = walk(p->pagetable, a+i, 0)) == 0){
+        printf("dump: see the first unmapped page of pid %d\n", pid);
+	    	break;
+	  }
+
+	    pa = (uint64)PTE_ADDR(*pte);
+
+      if(i == 0){
+          if(size < PGSIZE - off) {
+            n = size;
+          } else {
+            n = PGSIZE - off;
+          }
+        memmove(b, P2V(pa)+off, n);
+        printf("memmove(%d, %d, %d)\n", b, P2V(pa)+off, n);
+      }
+      else{
+        if(size - (i-off) < PGSIZE) {
+          n = size - (i-off);
+        } else {
+          n = PGSIZE;    
+        }
+        memmove(b+i-off, P2V(pa), n);
+        printf("memmove(%d, %d, %d)\n", b+i-off, P2V(pa), n);
+      }
+  }
+
+  release(&proc->lock);
+
+  return i - off >= size ? size : i - off;
 }
 
 // Print a process listing to console.  For debugging.

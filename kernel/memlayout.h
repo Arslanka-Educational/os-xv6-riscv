@@ -47,6 +47,11 @@
 #define KERNBASE 0x80000000L
 #define PHYSTOP (KERNBASE + 128*1024*1024)
 
+#define V2P(a) (((uint) (a)) - KERNBASE)
+#define P2V(a) (((void *) (a)) + KERNBASE)
+
+#define PTE_ADDR(pte) ((uint)(pte) & ~0xFFF)
+
 // map the trampoline page to the highest address,
 // in both user and kernel space.
 #define TRAMPOLINE (MAXVA - PGSIZE)

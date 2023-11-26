@@ -16,7 +16,7 @@ kernel/kernel
 user/usys.S
 .gdbinit
 sc-dt
-*.cache
-*.dir-locals.el
-*.editorconfig
-*.gdbinit.tmpl-riscv
+./.cache
+./.dir-locals.el
+./.editorconfig
+./.gdbinit.tmpl-riscv
